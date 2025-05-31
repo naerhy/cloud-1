@@ -1,0 +1,5 @@
+cloud_1:
+  hosts:
+    provider:
+      ansible_host: 51.159.148.214
+      ansible_user: root
