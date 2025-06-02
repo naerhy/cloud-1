@@ -46,7 +46,11 @@
         name: docker
         state: started
         enabled: true
-    - name: copy .env file
+    - name: copy Docker related files
       ansible.builtin.copy:
-        src: .env
-        dest: /.env
+        src: docker
+        dest: /cloud-1
+    - name: start Docker containers
+      ansible.builtin.command:
+        cmd: docker compose up -d
+        chdir: /cloud-1/docker
