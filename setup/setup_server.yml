@@ -2,44 +2,93 @@
 
 - hosts: webservers
   user: root
+  name: Install Docker
+  become: yes
+
+  vars:
+    docker_group: docker
 
   tasks:
-    - name: update apt
+    - name: Remove existing Docker repository files
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/apt/sources.list.d/docker.list
+        - /etc/apt/keyrings/docker.asc
+        - /etc/apt/keyrings/docker.gpg
+        - /usr/share/keyrings/docker-archive-keyring.gpg
+
+    - name: Update apt cache after removing configs
       apt:
         update_cache: yes
-        cache_valid_time: 3600
 
-    - name: Install required packages
+    - name: Install prerequisites
       apt:
         name:
-          - apt-transport-https
           - ca-certificates
           - curl
           - gnupg
           - lsb-release
         state: present
+        update_cache: yes
 
-    - name: Add Docker GPG key
-      apt_key:
-        url: https://download.docker.com/linux/{{ ansible_distribution|lower }}/gpg
-        state: present
+    - name: Create keyrings directory
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
 
-    - name: Add Docker repository
-      apt_repository:
-        repo: "deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable"
-        state: present
+    - name: Download Docker GPG key
+      shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      args:
+        creates: /etc/apt/keyrings/docker.gpg
 
-    - name: Install Docker Engine
+    - name: Set permissions for Docker keyring
+      file:
+        path: /etc/apt/keyrings/docker.gpg
+        mode: '0644'
+
+    - name: Get DEB architecture
+      shell: dpkg --print-architecture
+      register: deb_architecture
+
+    - name: Add Docker repository using template
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/docker.list
+        content: "deb [arch={{ deb_architecture.stdout }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        mode: '0644'
+
+    - name: Clear any problematic apt lists
+      shell: rm -rf /var/lib/apt/lists/* && apt-get clean
+      
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Docker
       apt:
         name:
           - docker-ce
           - docker-ce-cli
           - containerd.io
-        state: present
-        update_cache: yes
+          - docker-compose
+          - docker-compose-plugin
+        state: latest
+        update_cache: true
 
-    - name: Start and enable Docker service
+    - name: Start and enable service docker
       service:
         name: docker
-        state: started
         enabled: yes
+        state: started
+
+    - name: Create docker group
+      group:
+        name: "{{ docker_group }}"
+        state: present
+
+    - name: Add user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        group: "{{ docker_group }}"

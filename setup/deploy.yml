@@ -21,12 +21,12 @@
         mode: '064'
   
     - name: start the dockers
-      command: docker compose up -d
+      command: docker compose up -d --build
       args:
         chdir: "{{ app_name }}"
 
     - name: ensure the app is running and all containers are healthy
-      shell: docker ps | grep -q healthy && echo "All containers healthy" || echo ""
+      shell: "[ $(docker ps --format '{% raw %}{{.Status}}{% endraw %}' | grep 'unhealthy' | wc -l) -eq 0 ] && [ $(docker ps --format '{% raw %}{{.Status}}{% endraw %}' | grep 'starting' | wc -l) -eq 0 ] && echo 'All containers healthy' || echo ''"
       register: app_status
       until: app_status.stdout != ""
       retries: 5
