@@ -17,7 +17,6 @@ services:
     networks:
       - cloud-network
 
-  # postgres:
   phpmyadmin:
     container_name: ${PHPMYADMIN_CONTAINER_NAME}
     build:
@@ -35,38 +34,46 @@ services:
       PMA_ARBITRARY: 1
     networks:
       - cloud-network
-  # wp:
-  #   build:
-  #     context: ./services/wordpress
-  #     dockerfile: Dockerfile
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - postgres
-  #   volumes:
-  #     - wp-volume:/var/www/html
-  #   environment:
-  #     WORDPRESS_DB_HOST: mysql:3306
-  #     WORDPRESS_DB_USER: ${MYSQL_USER}
-  #     WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
-  #     WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
-  # nginx:
-  #   image: nginx:1-alpine
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - mysql
-  #     - wp
-  #   ports:
-  #     - 8080:80
-  #     # - 443:443
-  #   volumes:
-  #     # TODO: rename config file to conf.d or not?
-  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
-  #     - wp-volume:/var/www/html
+
+  wp:
+    container_name: ${WP_CONTAINER_NAME}
+    build:
+      context: ./services/wordpress
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+    volumes:
+      - wp-volume:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: ${MARIADB_CONTAINER_NAME}:${MARIADB_PORT}
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+    networks:
+      - cloud-network
+
+  nginx:
+    container_name: ${NGINX_CONTAINER_NAME}
+    build:
+      context: ./services/nginx
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+      - wp
+    ports:
+      - ${NGINX_PORT}:80
+    volumes:
+      - wp-volume:/var/www/html
+    networks:
+      - cloud-network
 
 volumes:
   mariadb_data:
     driver: local
-  # wp-volume:
+  wp-volume:
+    driver: local
 
 networks:
   cloud-network:
