@@ -1,0 +1,78 @@
+services:
+  mariadb:
+    container_name: ${MARIADB_CONTAINER_NAME}
+    build:
+      context: ./services/mariaDB
+      dockerfile: Dockerfile
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    restart: unless-stopped
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - cloud-network
+
+  phpmyadmin:
+    container_name: ${PHPMYADMIN_CONTAINER_NAME}
+    build:
+      context: ./services/phpMyAdmin
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+    ports:
+      - ${PHPMYADMIN_PORT}:80
+    environment:
+      PMA_HOST: ${MARIADB_CONTAINER_NAME}
+      PMA_USER: ${MYSQL_USER}
+      PMA_PASSWORD: ${MYSQL_PASSWORD}
+      PMA_ARBITRARY: 1
+    networks:
+      - cloud-network
+
+  wp:
+    container_name: ${WP_CONTAINER_NAME}
+    build:
+      context: ./services/wordpress
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+    volumes:
+      - wp-volume:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: ${MARIADB_CONTAINER_NAME}:${MARIADB_PORT}
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+    networks:
+      - cloud-network
+
+  nginx:
+    container_name: ${NGINX_CONTAINER_NAME}
+    build:
+      context: ./services/nginx
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+      - wp
+    ports:
+      - ${NGINX_PORT}:80
+    volumes:
+      - wp-volume:/var/www/html
+    networks:
+      - cloud-network
+
+volumes:
+  mariadb_data:
+    driver: local
+  wp-volume:
+    driver: local
+
+networks:
+  cloud-network:
+    driver: bridge
