@@ -10,8 +10,6 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     restart: unless-stopped
-    ports:
-      - ${MARIADB_PORT}:${MARIADB_PORT}
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
