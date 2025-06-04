@@ -17,18 +17,26 @@ endef
 help:
 	@echo "Usage: make [target]"
 	@echo "Targets:"
-	@echo "  install:    Install the project"
-	@echo "  freeze:     Freeze the dependencies"
-	@echo "  fclean:     Remove the virtual environment and the datasets"
-	@echo "  clean:      Remove the cache files"
-	@echo "  re:         Reinstall the project"
-	@echo "  phony:      Run the phony targets"
+	@echo "  start:			Start the application on the remote host"
+	@echo "  setup-remote:	Install docker on the remote host"
+	@echo "  install:		Install the project"
+	@echo "  freeze:		Freeze the dependencies"
+	@echo "  fclean:		Remove the virtual environment and the datasets"
+	@echo "  clean:			Remove the cache files"
+	@echo "  re:			Reinstall the project"
+	@echo "  phony:			Run the phony targets"
 
 start:
 	@{ \
 		echo "Starting the application..."; \
 		if [ ! -d ${VENV_DIR} ]; then echo "Virtual environment not found. Please run 'make install' first."; exit 1; fi; \
 		$(call venvWrapper, ansible-playbook -i ./setup/hosts ./setup/deploy.yml); \
+	}
+
+setup-remote:
+	@{ \
+		echo "Install docker for remote-host..."; \
+		$(call venvWrapper, ansible-playbook -i ./setup/hosts ./setup/setup_server.yml); \
 	}
 
 install:
