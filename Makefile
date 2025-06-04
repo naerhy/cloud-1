@@ -14,8 +14,6 @@ define venvWrapper
 	}
 endef
 
-APP_FILE := manage.py
-
 help:
 	@echo "Usage: make [target]"
 	@echo "Targets:"
@@ -25,6 +23,13 @@ help:
 	@echo "  clean:      Remove the cache files"
 	@echo "  re:         Reinstall the project"
 	@echo "  phony:      Run the phony targets"
+
+start:
+	@{ \
+		echo "Starting the application..."; \
+		if [ ! -d ${VENV_DIR} ]; then echo "Virtual environment not found. Please run 'make install' first."; exit 1; fi; \
+		$(call venvWrapper, ansible-playbook -i ./setup/hosts ./setup/deploy.yml); \
+	}
 
 install:
 		@{ \
