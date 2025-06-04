@@ -1,36 +1,48 @@
 services:
-  mysql:
-    image: mysql:9
-    restart: unless-stopped
-    volumes:
-      - mysql-volume:/var/lib/mysql
-    env_file: .env
-  wp:
-    image: wordpress:6-fpm-alpine
-    restart: unless-stopped
-    depends_on:
-      - mysql
-    volumes:
-      - wp-volume:/var/www/html
+  mariadb:
+    container_name: mariadb-container
+    build:
+      context: ./services/mariaDB
+      dockerfile: Dockerfile
     environment:
-      WORDPRESS_DB_HOST: mysql:3306
-      WORDPRESS_DB_USER: ${MYSQL_USER}
-      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
-      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
-  nginx:
-    image: nginx:1-alpine
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     restart: unless-stopped
-    depends_on:
-      - mysql
-      - wp
     ports:
-      - 8080:80
-      # - 443:443
+      - 3306:3306
     volumes:
-      # TODO: rename config file to conf.d or not?
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - wp-volume:/var/www/html
+      - mariadb_data:/var/lib/mysql
+  # wp:
+  #   build:
+  #     context: ./services/wordpress
+  #     dockerfile: Dockerfile
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - postgres
+  #   volumes:
+  #     - wp-volume:/var/www/html
+  #   environment:
+  #     WORDPRESS_DB_HOST: mysql:3306
+  #     WORDPRESS_DB_USER: ${MYSQL_USER}
+  #     WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+  #     WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+  # nginx:
+  #   image: nginx:1-alpine
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - mysql
+  #     - wp
+  #   ports:
+  #     - 8080:80
+  #     # - 443:443
+  #   volumes:
+  #     # TODO: rename config file to conf.d or not?
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - wp-volume:/var/www/html
 
 volumes:
-  mysql-volume:
-  wp-volume:
+  mariadb_data:
+    driver: local
+  # wp-volume:
