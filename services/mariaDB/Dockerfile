@@ -4,7 +4,7 @@ FROM mariadb:latest
 VOLUME /var/lib/mysql
 
 # Expose the MariaDB port
-EXPOSE 3306
+EXPOSE ${MARIADB_PORT}
 
 # Add a health check to ensure the database is ready
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
