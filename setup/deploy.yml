@@ -1,0 +1,36 @@
+---
+
+- hosts: webservers
+  user: root
+
+  vars:
+    app_name: app
+
+  tasks:
+    - name: Synchronize local folder to remote host
+      synchronize:
+        src: ../app/
+        dest: "{{ app_name }}"
+        rsync_opts:
+          - "--chmod=755"
+
+    - name: Copy environment file
+      copy:
+        src: ../.env
+        dest: "{{ app_name }}/.env"
+        mode: '064'
+  
+    - name: start the dockers
+      command: docker compose up -d --build
+      args:
+        chdir: "{{ app_name }}"
+
+    - name: ensure the app is running and all containers are healthy
+      shell: "[ $(docker ps --format '{% raw %}{{.Status}}{% endraw %}' | grep 'unhealthy' | wc -l) -eq 0 ] && [ $(docker ps --format '{% raw %}{{.Status}}{% endraw %}' | grep 'starting' | wc -l) -eq 0 ] && echo 'All containers healthy' || echo ''"
+      register: app_status
+      until: app_status.stdout != ""
+      retries: 5
+      delay: 10
+      ignore_errors: yes
+      args:
+        chdir: "{{ app_name }}"
