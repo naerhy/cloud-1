@@ -1,0 +1,6 @@
+cloud_1:
+  hosts:
+    ovh:
+      ansible_host: TO_REPLACE
+      ansible_user: TO_REPLACE
+      ansible_password: TO_REPLACE
