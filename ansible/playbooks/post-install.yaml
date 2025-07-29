@@ -1,0 +1,28 @@
+---
+- name: Configure host machine to work better with Docker
+  hosts: ovh
+  become: true
+  vars:
+    docker_group: docker
+  tasks:
+    - name: Create docker group
+      ansible.builtin.group:
+        name: "{{ docker_group }}"
+    - name: Add user to created group
+      ansible.builtin.user:
+        name: "{{ ansible_user_id }}"
+        append: true
+        groups: "{{ docker_group }}"
+    - name: Test
+      ansible.builtin.command: docker run hello-world
+      become: false
+    # - name: create directory to store certificates
+      # ansible.builtin.file:
+        # path: /.ssl-certs
+        # state: directory
+        # mode: "0755"
+    # - name: generate self-signed ssl certificates
+      # ansible.builtin.command:
+        # cmd: openssl req -x509 -newkey rsa:2048 -days 365 -noenc -keyout private_key.pem -out public_cert.crt -subj "/C=FR/O=Cloud-1"
+        # chdir: /.ssl-certs # TODO END
+...

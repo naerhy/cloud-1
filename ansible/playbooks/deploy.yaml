@@ -1,11 +1,7 @@
----
-
-- hosts: webservers
+- hosts: ovh
   user: root
-
   vars:
     app_name: app
-
   tasks:
     - name: Synchronize local folder to remote host
       synchronize:
