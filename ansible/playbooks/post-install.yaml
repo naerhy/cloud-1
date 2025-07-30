@@ -13,9 +13,6 @@
         name: "{{ ansible_user_id }}"
         append: true
         groups: "{{ docker_group }}"
-    - name: Test
-      ansible.builtin.command: docker run hello-world
-      become: false
     # - name: create directory to store certificates
       # ansible.builtin.file:
         # path: /.ssl-certs

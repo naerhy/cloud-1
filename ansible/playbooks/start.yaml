@@ -1,26 +1,25 @@
-- hosts: ovh
-  user: root
+---
+- name: Deploy Docker configuration to machine
+  hosts: ovh
   vars:
-    app_name: app
+    app_dir: app
   tasks:
     - name: Synchronize local folder to remote host
-      synchronize:
+      ansible.builtin.synchronize:
         src: ../app/
-        dest: "{{ app_name }}"
+        dest: "{{ app_dir }}"
         rsync_opts:
           - "--chmod=755"
-
-    - name: Copy environment file
-      copy:
+    - name: Copy .env file
+      ansible.builtin.copy:
         src: ../.env
-        dest: "{{ app_name }}/.env"
-        mode: '064'
-  
-    - name: start the dockers
+        dest: "/{{ app_dir }}/.env"
+        mode: "064"
+    - name: Start the dockers
       command: docker compose up -d --build
+      chdir: "{{ app_dir }}"
       args:
-        chdir: "{{ app_name }}"
-
+        chdir: "{{ app_dir }}"
     - name: ensure the app is running and all containers are healthy
       shell: "[ $(docker ps --format '{% raw %}{{.Status}}{% endraw %}' | grep 'unhealthy' | wc -l) -eq 0 ] && [ $(docker ps --format '{% raw %}{{.Status}}{% endraw %}' | grep 'starting' | wc -l) -eq 0 ] && echo 'All containers healthy' || echo ''"
       register: app_status
@@ -29,4 +28,5 @@
       delay: 10
       ignore_errors: yes
       args:
-        chdir: "{{ app_name }}"
+        chdir: "{{ app_dir }}"
+...

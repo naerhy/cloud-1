@@ -1,11 +1,11 @@
 SHELL := /bin/bash
 python := python3
 SRC_DIR := .
-VENV_DIR := cloud_venv
+VENV_DIR := .venv
 DEP_FILE := requirements.txt
-
-# The URL to the dataset
-DATA_DIR := data
+DATA_DIR := data # the URL to the dataset
+ANSIBLE_PLAYBOOK_CMD := ansible-playbook
+ANSIBLE_INVENTORY := ansible/inventory.yaml
 
 define venvWrapper
 	{\
@@ -17,32 +17,33 @@ endef
 help:
 	@echo "Usage: make [target]"
 	@echo "Targets:"
-	@echo "  start:			Start the application on the remote host"
-	@echo "  setup-remote:	Install docker on the remote host"
-	@echo "  install:		Install the project"
-	@echo "  freeze:		Freeze the dependencies"
-	@echo "  fclean:		Remove the virtual environment and the datasets"
-	@echo "  clean:			Remove the cache files"
-	@echo "  re:			Reinstall the project"
-	@echo "  phony:			Run the phony targets"
+	@echo "  start:         Start the application on the remote host"
+	@echo "  setup-remote:  Install docker on the remote host"
+	@echo "  install:       Install the project"
+	@echo "  freeze:        Freeze the dependencies"
+	@echo "  fclean:        Remove the virtual environment and the datasets"
+	@echo "  clean:         Remove the cache files"
+	@echo "  re:            Reinstall the project"
+	@echo "  phony:         Run the phony targets"
 
 start:
 	@{ \
 		echo "Starting the application..."; \
-		if [ ! -d ${VENV_DIR} ]; then echo "Virtual environment not found. Please run 'make install' first."; exit 1; fi; \
-		$(call venvWrapper, ansible-playbook -i ./setup/hosts ./setup/deploy.yml); \
-	}
-
-setup-remote:
-	@{ \
-		echo "Install docker for remote-host..."; \
-		$(call venvWrapper, ansible-playbook -i ./setup/hosts ./setup/setup_server.yml); \
+		if [ ! -d ${VENV_DIR} ]; then echo "Virtual environment not found. Please run 'make setup' first" && exit 1; fi; \
+		$(call venvWrapper, ${ANSIBLE_PLAYBOOK_CMD} -i ${ANSIBLE_INVENTORY} ansible/playbooks/start.yaml); \
 	}
 
 install:
+	@{ \
+		echo "Install docker for remote-host..."; \
+		if [ ! -d ${VENV_DIR} ]; then echo "Virtual environment not found. Please run 'make setup' first" && exit 1; fi; \
+		$(call venvWrapper, ${ANSIBLE_PLAYBOOK_CMD} -i ${ANSIBLE_INVENTORY} ansible/playbooks/install.yaml); \
+	}
+
+setup:
 		@{ \
 		echo "Setting up..."; \
-		if [ -z ${ASSET_URL} ] || [ -d ${DATA_DIR} ]; then echo "nothing to download"; else \
+		if [ -z ${ASSET_URL} ] || [ -d ${DATA_DIR} ]; then echo "Nothing to download"; else \
 			filename=$(notdir ${ASSET_URL}); \
 			wget --no-check-certificate -O $${filename} ${ASSET_URL}; \
 			mkdir -p ${DATA_DIR}/; \
@@ -59,7 +60,7 @@ install:
 		. ${VENV_DIR}/bin/activate; \
 		if [ -f ${DEP_FILE}  ]; then \
 			pip install -r ${DEP_FILE}; \
-			echo "Installing dependencies...DONE"; \
+			echo "Installing dependencies: DONE"; \
 		fi; \
 		}
 
