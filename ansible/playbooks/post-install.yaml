@@ -17,7 +17,7 @@
       # ansible.builtin.file:
         # path: /.ssl-certs
         # state: directory
-        # mode: "0755"
+        # mode: "755"
     # - name: generate self-signed ssl certificates
       # ansible.builtin.command:
         # cmd: openssl req -x509 -newkey rsa:2048 -days 365 -noenc -keyout private_key.pem -out public_cert.crt -subj "/C=FR/O=Cloud-1"

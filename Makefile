@@ -4,8 +4,7 @@ SRC_DIR := .
 VENV_DIR := .venv
 DEP_FILE := requirements.txt
 DATA_DIR := data # the URL to the dataset
-ANSIBLE_PLAYBOOK_CMD := ansible-playbook
-ANSIBLE_INVENTORY := ansible/inventory.yaml
+ANSIBLE_BASE_CMD := ansible-playbook -i ansible/inventory.yaml -e @ansible/secrets.yaml --ask-vault-pass
 
 define venvWrapper
 	{\
@@ -30,14 +29,14 @@ start:
 	@{ \
 		echo "Starting the application..."; \
 		if [ ! -d ${VENV_DIR} ]; then echo "Virtual environment not found. Please run 'make setup' first" && exit 1; fi; \
-		$(call venvWrapper, ${ANSIBLE_PLAYBOOK_CMD} -i ${ANSIBLE_INVENTORY} ansible/playbooks/start.yaml); \
+		$(call venvWrapper, ${ANSIBLE_BASE_CMD} ansible/playbooks/start.yaml); \
 	}
 
 install:
 	@{ \
 		echo "Install docker for remote-host..."; \
 		if [ ! -d ${VENV_DIR} ]; then echo "Virtual environment not found. Please run 'make setup' first" && exit 1; fi; \
-		$(call venvWrapper, ${ANSIBLE_PLAYBOOK_CMD} -i ${ANSIBLE_INVENTORY} ansible/playbooks/install.yaml); \
+		$(call venvWrapper, ${ANSIBLE_BASE_CMD} ansible/playbooks/install.yaml); \
 	}
 
 setup:
