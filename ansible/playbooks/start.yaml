@@ -2,31 +2,30 @@
 - name: Deploy Docker configuration to machine
   hosts: ovh
   vars:
-    app_dir: app
+    app_dir: "/home/{{ ansible_user_id }}/app"
   tasks:
     - name: Synchronize local folder to remote host
-      ansible.builtin.synchronize:
+      ansible.posix.synchronize:
         src: ../app/
         dest: "{{ app_dir }}"
         rsync_opts:
           - "--chmod=755"
     - name: Copy .env file
       ansible.builtin.copy:
-        src: ../.env
-        dest: "/{{ app_dir }}/.env"
-        mode: "064"
-    - name: Start the dockers
-      command: docker compose up -d --build
-      chdir: "{{ app_dir }}"
-      args:
+        src: .env
+        dest: "{{ app_dir }}/.env"
+        mode: "644"
+    - name: Start the Docker containers
+      ansible.builtin.command:
+        cmd: docker compose up -d --build
         chdir: "{{ app_dir }}"
-    - name: ensure the app is running and all containers are healthy
-      shell: "[ $(docker ps --format '{% raw %}{{.Status}}{% endraw %}' | grep 'unhealthy' | wc -l) -eq 0 ] && [ $(docker ps --format '{% raw %}{{.Status}}{% endraw %}' | grep 'starting' | wc -l) -eq 0 ] && echo 'All containers healthy' || echo ''"
+    - name: Ensure all containers are healthy
+      ansible.builtin.shell:
+        cmd: "[ $(docker ps --format '{% raw %}{{.Status}}{% endraw %}' | grep 'unhealthy' | wc -l) -eq 0 ] && [ $(docker ps --format '{% raw %}{{.Status}}{% endraw %}' | grep 'starting' | wc -l) -eq 0 ] && echo 'All containers healthy' || echo ''"
+        chdir: "{{ app_dir }}"
       register: app_status
       until: app_status.stdout != ""
       retries: 5
       delay: 10
-      ignore_errors: yes
-      args:
-        chdir: "{{ app_dir }}"
+      # ignore_errors: true TODO: check if mandatory
 ...

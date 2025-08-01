@@ -1,6 +1,8 @@
 # Use the official Nginx image
 FROM nginx:latest
 
+ARG NGINX_SERVERNAME
+
 # Remove the default Nginx configuration
 RUN rm /etc/nginx/conf.d/default.conf
 
@@ -9,6 +11,9 @@ COPY nginx.conf /etc/nginx/
 
 # Copy the server configuration
 COPY nginx-server.conf /etc/nginx/conf.d/
+
+# Update server name in server configuration
+RUN sed -i "s/TO_REPLACE/${NGINX_SERVERNAME}/g" /etc/nginx/conf.d/nginx-server.conf
 
 # Expose port 80
 EXPOSE 80

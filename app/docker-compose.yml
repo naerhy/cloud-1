@@ -56,6 +56,8 @@ services:
     build:
       context: ./services/nginx
       dockerfile: Dockerfile
+      args:
+        NGINX_SERVERNAME: ${NGINX_SERVERNAME}
     restart: unless-stopped
     depends_on:
       - mariadb
