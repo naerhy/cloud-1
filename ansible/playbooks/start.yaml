@@ -1,8 +1,8 @@
 ---
 - name: Deploy Docker configuration to machine
   hosts: ovh
-  vars:
-    app_dir: "/home/{{ ansible_user_id }}/app"
+  vars_files:
+    - vars/app_dir.yaml
   tasks:
     - name: Synchronize local folder to remote host
       ansible.posix.synchronize:

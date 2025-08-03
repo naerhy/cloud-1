@@ -32,6 +32,13 @@ start:
 		$(call venvWrapper, ${ANSIBLE_BASE_CMD} ansible/playbooks/start.yaml); \
 	}
 
+remove:
+	@{ \
+		echo "Removing the application..."; \
+		if [ ! -d ${VENV_DIR} ]; then echo "Virtual environment not found. Please run 'make setup' first" && exit 1; fi; \
+		$(call venvWrapper, ${ANSIBLE_BASE_CMD} ansible/playbooks/remove.yaml); \
+	}
+
 install:
 	@{ \
 		echo "Install docker for remote-host..."; \
@@ -74,4 +81,4 @@ clean:
 
 re: fclean install
 
-phony: install freeze fclean clean re help
+phony: start install setup remove freeze fclean clean re help

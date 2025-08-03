@@ -1,0 +1,22 @@
+---
+- name: Remove everything related to Docker
+  hosts: ovh
+  vars_files:
+    - vars/app_dir.yaml
+  tasks:
+    - name: Stop Docker containers
+      ansible.builtin.command:
+        cmd: docker compose down
+        chdir: "{{ app_dir }}"
+    - name: Remove Docker volumes
+      ansible.builtin.command:
+        cmd: docker volume rm app_mariadb_data app_wp-volume
+        chdir: "{{ app_dir }}"
+    - name: Remove app directory
+      ansible.builtin.file:
+        path: "{{ app_dir }}"
+        state: absent
+
+- name: Import playbook to uninstall Docker if present on machine
+  ansible.builtin.import_playbook: uninstall.yaml
+...
