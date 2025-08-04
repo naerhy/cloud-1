@@ -5,14 +5,12 @@
 - name: Install and setup Docker
   hosts: ovh
   become: true
-  # remote_user: ubuntu # TODO: replace with secrets
   tasks:
     - name: Install prerequisites
       ansible.builtin.apt:
         name:
           - ca-certificates
           - curl
-          - openssl
         update_cache: true
     - name: Create keyrings directory
       ansible.builtin.file:

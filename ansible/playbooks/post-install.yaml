@@ -13,13 +13,4 @@
         name: "{{ ansible_user_id }}"
         append: true
         groups: "{{ docker_group }}"
-    # - name: create directory to store certificates
-      # ansible.builtin.file:
-        # path: /.ssl-certs
-        # state: directory
-        # mode: "755"
-    # - name: generate self-signed ssl certificates
-      # ansible.builtin.command:
-        # cmd: openssl req -x509 -newkey rsa:2048 -days 365 -noenc -keyout private_key.pem -out public_cert.crt -subj "/C=FR/O=Cloud-1"
-        # chdir: /.ssl-certs # TODO END
 ...
