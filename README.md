@@ -6,6 +6,18 @@ TOOD
 
 ## Usage
 
+### Secrets file
+
+The `secrets.yaml` file holds all the sensitive data about the host provider.  
+The password is only known by members of this project, and is required in order to launch the ansible playbooks.  
+It holds the following values:
+- host (ip)
+- user
+- password
+- domain_name
+
+You can generate a new file with a new password in case you have to update these values.
+
 ### Environment variables
 
 Define the following variables in a `.env` file located in the `ansible/playbooks/files` directory.
@@ -35,5 +47,4 @@ WP_DB_HOST=...
 
 NGINX_CONTAINER_NAME=...
 NGINX_PORT=...
-NGINX_SERVERNAME=...
 ```

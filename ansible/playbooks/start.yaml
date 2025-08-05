@@ -3,6 +3,8 @@
   hosts: ovh
   vars_files:
     - vars/app_dir.yaml
+  vars:
+    dotenv_path: "{{ app_dir }}/.env"
   tasks:
     - name: Synchronize local folder to remote host
       ansible.posix.synchronize:
@@ -13,8 +15,15 @@
     - name: Copy .env file
       ansible.builtin.copy:
         src: .env
-        dest: "{{ app_dir }}/.env"
+        dest: "{{ dotenv_path }}"
         mode: "644"
+    - name: Add domain name variable to .env file
+      ansible.builtin.lineinfile:
+        path: "{{ dotenv_path }}"
+        line: "{{ item }}"
+      loop:
+        - NGINX_DOMAIN_NAME={{ domain_name }}
+        - NGINX_WWW_DOMAIN_NAME=www.{{ domain_name }}
     - name: Start the Docker containers
       ansible.builtin.command:
         cmd: docker compose up -d --build
