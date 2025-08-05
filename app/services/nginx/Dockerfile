@@ -1,7 +1,8 @@
 # Use the official Nginx image
 FROM nginx:latest
 
-ARG NGINX_SERVERNAME
+ARG NGINX_DOMAIN_NAME
+ARG NGINX_WWW_DOMAIN_NAME
 
 # Remove the default Nginx configuration
 RUN rm /etc/nginx/conf.d/default.conf
@@ -13,12 +14,13 @@ COPY nginx.conf /etc/nginx/
 COPY nginx-server.conf /etc/nginx/conf.d/
 
 # Update server name in server configuration
-RUN sed -i "s/TO_REPLACE/${NGINX_SERVERNAME}/g" /etc/nginx/conf.d/nginx-server.conf
+RUN sed -i "s/TO_REPLACE/${NGINX_DOMAIN_NAME} ${NGINX_WWW_DOMAIN_NAME}/g" /etc/nginx/conf.d/nginx-server.conf
 
 RUN openssl req -x509 -noenc -days 7 -newkey rsa:2048 -sha512 \
     -keyout /etc/ssl/private/selfsigned.key \
     -out /etc/ssl/certs/selfsigned.crt \
-    -subj="/C=FR/O=42Paris/CN=cloud1fmqd.cloud"
+    -subj="/C=FR/O=42Paris/CN=${NGINX_DOMAIN_NAME}" \
+    -addext "subjectAltName = DNS:${NGINX_WWW_DOMAIN_NAME}"
 
 # Expose port 80
 EXPOSE 80
