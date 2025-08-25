@@ -22,8 +22,8 @@ RUN openssl req -x509 -noenc -days 7 -newkey rsa:2048 -sha512 \
     -subj="/C=FR/O=42Paris/CN=${NGINX_DOMAIN_NAME}" \
     -addext "subjectAltName = DNS:${NGINX_WWW_DOMAIN_NAME}"
 
-# Expose port 80
-EXPOSE 80
+# Expose port 443
+EXPOSE 443
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:80/ || exit 1
