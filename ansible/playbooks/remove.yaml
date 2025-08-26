@@ -8,10 +8,12 @@
       ansible.builtin.command:
         cmd: docker compose down
         chdir: "{{ app_dir }}"
+      ignore_errors: yes
     - name: Remove Docker volumes
       ansible.builtin.command:
         cmd: docker volume rm app_mariadb_data app_wp-volume
         chdir: "{{ app_dir }}"
+      ignore_errors: yes
     - name: Remove app directory
       ansible.builtin.file:
         path: "{{ app_dir }}"
